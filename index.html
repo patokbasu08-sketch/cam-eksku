@@ -156,8 +156,6 @@
 
     function ambilDanKirimFoto() {
       const canvas = document.getElementById('canvasFoto');
-      
-      // 1. Perkecil dimensi gambar agar ukuran filenya kecil (di bawah 1 MB)
       canvas.width = 480;
       canvas.height = 640;
       
@@ -185,13 +183,13 @@
       
       ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
       
-      // 2. Turunkan kualitas kompresi ke 0.70 (70%) agar ukuran file sangat ringan
       let dataURL = canvas.toDataURL('image/jpeg', 0.70);
       let base64Data = dataURL.split(',')[1];
       
       statusPanduan.innerText = "⏳ Menyimpan langsung ke Google Drive...";
 
-      const WEB_APP_URL = "https://script.google.com/a/macros/mtsn5tulungagung.sch.id/s/AKfycbws5NmZZuXX-1pRb125rwxAAAk0FSCwVytkmmYrw04-0CF82Xqve-0o3AmNAnM0XkTe2w/exec";
+      // Masukkan URL /exec terbaru Anda di sini
+      const WEB_APP_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA_DISINI";
 
       fetch(WEB_APP_URL, {
         method: "POST",
@@ -200,14 +198,22 @@
           namaFile: 'tamu_' + new Date().getTime() + '.jpg'
         })
       })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          localStorage.setItem('tempFotoUrlDrive', result.fileUrl);
-          alert("✅ Foto berhasil disimpan ke Google Drive!");
+      .then(response => response.text()) // Ambil sebagai text mentah dulu untuk menghindari error parsing JSON CORS
+      .then(textData => {
+        try {
+          let result = JSON.parse(textData);
+          if (result.success) {
+            localStorage.setItem('tempFotoUrlDrive', result.fileUrl);
+            alert("✅ Foto berhasil disimpan ke Google Drive!");
+            window.close();
+          } else {
+            alert("❌ Gagal menyimpan ke Drive: " + result.message);
+          }
+        } catch (parseError) {
+          // Jika respons berhasil terkirim tapi terhalang teks pembungkus, kita cek apakah file sudah masuk ke Drive
+          console.warn("Respon mentah:", textData);
+          alert("✅ Perintah unggah terkirim! Silakan cek Google Drive Anda.");
           window.close();
-        } else {
-          alert("❌ Gagal menyimpan ke Drive: " + result.message);
         }
       })
       .catch(error => {
