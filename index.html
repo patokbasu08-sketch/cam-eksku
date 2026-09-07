@@ -188,17 +188,21 @@
       
       statusPanduan.innerText = "⏳ Menyimpan langsung ke Google Drive...";
 
-      // Masukkan URL /exec terbaru Anda di sini
+      // Masukkan URL /exec terbaru hasil New Deployment Anda di sini
       const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzuoj3wrdJ1ODsCdaBxC3qBuTCGNaEFIdj3qSFDDC1ASn5g8Bvza9tm16QIZG5EIHR1rw/exec";
 
       fetch(WEB_APP_URL, {
         method: "POST",
+        redirect: "follow", // Mengikuti pengalihan Google dengan aman
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8", // Kunci agar terhindar dari error CORS preflight
+        },
         body: JSON.stringify({
           fotoData: base64Data,
           namaFile: 'tamu_' + new Date().getTime() + '.jpg'
         })
       })
-      .then(response => response.text()) // Ambil sebagai text mentah dulu untuk menghindari error parsing JSON CORS
+      .then(response => response.text())
       .then(textData => {
         try {
           let result = JSON.parse(textData);
@@ -210,9 +214,8 @@
             alert("❌ Gagal menyimpan ke Drive: " + result.message);
           }
         } catch (parseError) {
-          // Jika respons berhasil terkirim tapi terhalang teks pembungkus, kita cek apakah file sudah masuk ke Drive
           console.warn("Respon mentah:", textData);
-          alert("✅ Perintah unggah terkirim! Silakan cek Google Drive Anda.");
+          alert("✅ Terkirim! Silakan cek hasil foto di Google Drive.");
           window.close();
         }
       })
