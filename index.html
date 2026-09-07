@@ -156,8 +156,10 @@
 
     function ambilDanKirimFoto() {
       const canvas = document.getElementById('canvasFoto');
-      canvas.width = 600;
-      canvas.height = 800;
+      
+      // 1. Perkecil dimensi gambar agar ukuran filenya kecil (di bawah 1 MB)
+      canvas.width = 480;
+      canvas.height = 640;
       
       const ctx = canvas.getContext('2d');
       ctx.translate(canvas.width, 0);
@@ -183,13 +185,13 @@
       
       ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
       
-      let dataURL = canvas.toDataURL('image/jpeg', 0.90);
+      // 2. Turunkan kualitas kompresi ke 0.70 (70%) agar ukuran file sangat ringan
+      let dataURL = canvas.toDataURL('image/jpeg', 0.70);
       let base64Data = dataURL.split(',')[1];
       
       statusPanduan.innerText = "⏳ Menyimpan langsung ke Google Drive...";
 
-      // Ganti URL di bawah dengan URL Web App Google Apps Script (/exec) Anda
-      const WEB_APP_URL = "https://script.google.com/a/macros/mtsn5tulungagung.sch.id/s/AKfycbws5NmZZuXX-1pRb125rwxAAAk0FSCwVytkmmYrw04-0CF82Xqve-0o3AmNAnM0XkTe2w/exec";
+      const WEB_APP_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA_DISINI";
 
       fetch(WEB_APP_URL, {
         method: "POST",
