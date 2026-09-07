@@ -185,50 +185,49 @@
       
       let dataURL = canvas.toDataURL('image/jpeg', 0.70);
       let base64Data = dataURL.split(',')[1];
-      let namaFileVal = 'tamu_' + new Date().getTime() + '.jpg';
       
-      statusPanduan.innerText = "⏳ Menyimpan foto ke Google Drive...";
+      statusPanduan.innerText = "⏳ Mengunggah foto ke Google Drive...";
 
-      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz5G_1mctmEn5lCLIaGmMD5uJ_2oeyk0M-2nR6IONyEuOLFsLbybNCbu1q0Egs-pLislQ/exec";
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyuzWNGaMq9ilbvVt3756cUeFKXxkUsZ8edC-iRzQ88wpp3N1prROOZ6HfjsGUE6Cb1jg/exec"; // Masukkan URL /exec terbaru Anda
 
-      // Menggunakan metode pengiriman form tersembunyi agar bebas dari error CORS / Koneksi
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = WEB_APP_URL;
-      form.target = 'hidden_iframe';
-      
-      // Buat iframe tersembunyi untuk menampung proses kirim
-      let iframe = document.getElementById('hidden_iframe');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = 'hidden_iframe';
-        iframe.id = 'hidden_iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-
-      // Masukkan data JSON ke dalam input form
-      const inputData = document.createElement('input');
-      inputData.type = 'hidden';
-      inputData.name = 'payload';
-      inputData.value = JSON.stringify({
-        fotoData: base64Data,
-        namaFile: namaFileVal
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        redirect: "follow",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify({
+          fotoData: base64Data,
+          namaFile: 'tamu_' + new Date().getTime() + '.jpg'
+        })
+      })
+      .then(response => response.text())
+      .then(textData => {
+        try {
+          let result = JSON.parse(textData);
+          if (result.success) {
+            statusPanduan.innerHTML = "<span class='text-success fw-bold'>✅ Berhasil! Menghubungkan ke PTSP...</span>";
+            
+            // Mengirim URL langsung ke jendela induk (Menu 1 PTSP) via window.opener
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage({ type: 'FOTO_BERHASIL', url: result.fileUrl }, "*");
+            }
+            
+            setTimeout(() => {
+              window.close();
+            }, 1000);
+          } else {
+            alert("❌ Gagal: " + result.message);
+          }
+        } catch (e) {
+          console.error("Parse error:", e);
+          alert("❌ Terjadi kesalahan memproses respons server.");
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        alert("❌ Terjadi kesalahan koneksi saat mengunggah foto.");
       });
-      form.appendChild(inputData);
-      document.body.appendChild(form);
-
-      // Karena kita pakai form submit, kita buat estimasi link file Drive sementara berdasarkan waktu unggah
-      // Atau kita andalkan sistem untuk langsung menutup jendela setelah terkirim
-      form.submit();
-
-      // Berikan jeda 2 detik untuk memastikan data terkirim ke server, lalu berikan notifikasi sukses
-      setTimeout(() => {
-        // Catatan: Karena Google Drive API butuh waktu membuat file, kita arahkan localStorage dengan parameter sukses
-        // Di sini kita buat link dummy/notifikasi agar pengguna tahu foto sudah dikirim
-        alert("✅ Foto berhasil dikirim! Silakan tutup jendela ini dan kembali ke menu utama.");
-        window.close();
-      }, 2000);
     }
   </script>
 </body>
